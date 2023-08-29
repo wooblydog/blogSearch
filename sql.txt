@@ -1,0 +1,16 @@
+CREATE DATABASE blog;
+
+CREATE TABLE posts (
+    id INT PRIMARY KEY,
+    user_id INT NOT NULL,
+    title VARCHAR(255),
+    body TEXT
+);
+
+CREATE TABLE comments (
+    id INT PRIMARY KEY ,
+    post_id INT REFERENCES posts(id) ON DELETE CASCADE,
+    name VARCHAR(255),
+    email VARCHAR(255),
+    body TEXT
+);
