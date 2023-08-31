@@ -1,6 +1,8 @@
 <?php require_once 'ParsingScript.php';
+require_once 'DataControl.php';
 
 $parsingScript = new ParsingScript();
+$dataController = new DataControl();
 
 $parsingScript->uploadData();
 
@@ -17,33 +19,42 @@ $parsingScript->uploadData();
 </head>
 <body class="mx-auto p-5 m-5">
 
-<form id="searchForm" method="post" action="" name="search-form">
+<form id="searchForm" method="GET" action="" name="search-form">
     <div class="form-floating m-5  align-middle d-flex justify-content-center ">
-        <input type="text" class="form-control" id="floatingInput" name="floatingInput" placeholder="-"
-               minlength="3"
-               value="">
+        <input type="text" class="form-control" id="floatingInput" name="floatingInput" required
+               minlength="3">
         <label for="floatingInput">Поиск по комментариям: введите ключевое слово для поиска</label>
         <button type="submit" class="ms-5 btn btn-primary pe-5 ps-5" id="submitBtn">Найти</button>
     </div>
 </form>
 
-<article class="blog-post m-5 p-5">
-    <h2 class="display-5 link-body-emphasis mb-1">Post title</h2>
-    <p class="blog-post-meta">by <a href="#">Jacob</a><br>
-        email@email.com</p>
 
-    <p>This is some additional paragraph placeholder content. It has been written to fill the available space and show
-        how a longer snippet of text affects the surrounding content. We'll repeat it often to keep the demonstration
-        flowing, so be on the lookout for this exact same string of text.</p>
-</article>
+<?php if ($dataController->getPosts() !== null) {
+    foreach ($dataController->getPosts() as $row) {
+        echo <<<HTML
+        <article class="blog-post m-5 p-5">
+            <h2 class="display-5 link-body-emphasis mb-1">{$row['title']}</h2>
+            <p class="blog-post-meta">by <a href="#">{$row['name']}</a><br>{$row['email']}</p>
+            <p>{$row['body']}</p>
+        </article>
+        HTML;
+    }
+}
 
+if (!$dataController->isValidKeyword($_GET['floatingInput'])) {
+    echo "Введите минимум три символа";
+}
+if ($dataController->getPosts() === null && $dataController->isValidKeyword($_GET['floatingInput'])) {
+    echo "Записей с ключевым словом '" . $_GET['floatingInput'] . "' в комментариях не найдено";
+}
+?>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
         crossorigin="anonymous">
 </script>
 <script>
-    var postsUploaded = <?php echo $parsingScript->getRecordsAmount('posts');?>;
-    var commentsUploaded = <?php echo $parsingScript->getRecordsAmount('comments');?>;
+    var postsUploaded = <?php echo $dataController->getRecordsAmount('posts');?>;
+    var commentsUploaded = <?php echo $dataController->getRecordsAmount('comments');?>;
     console.log("Загружено " + postsUploaded + " записей и " + commentsUploaded + " комментариев");
 </script>
 </body>

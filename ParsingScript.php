@@ -4,17 +4,23 @@ class ParsingScript
 {
     public $postsAData;
     public $commentsAData;
-    private $pdo;
-
+    public $pdo;
+    /**
+     *
+     * Подготовка объекта класса ParsingScript к выполнению задач загрузки
+     * данных из JSON-источников и подключения к базе данных
+     *
+     */
     public function __construct()
     {
-        $dsn = 'mysql:host=localhost;dbname=blog';
-        $username = 'mysql';
-        $password = '';
         $this->postsAData = json_decode(file_get_contents('https://jsonplaceholder.typicode.com/posts'), true);
         $this->commentsAData = json_decode(file_get_contents('https://jsonplaceholder.typicode.com/comments'), true);
 
+        $dsn = 'mysql:host=localhost;dbname=blog';
+        $username = 'mysql';
+        $password = '';
 
+        //Подключение к БД
         try {
             $this->pdo = new PDO($dsn, $username, $password);
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -23,15 +29,23 @@ class ParsingScript
         }
     }
 
-    public function uploadData() //загрузка данных в бд
+    /**
+     *
+     * Подготавливает, а затем загружает полученные данные в БД
+     *
+     * @return void
+     */
+    public function uploadData()
     {
-        if (!$this->checkData()) {
+        $dataController = new DataControl();
+        //Проверка на наличие данных в БД, для того чтобы избежать избыточности
+        if (!$dataController->isDataAvailable()) {
             $insertPostsQuery = "INSERT INTO posts (user_id, title, body) VALUES (:userId, :title, :body)";
             $insertCommentsQuery = "INSERT INTO comments (post_id, name, email, body) VALUES (:postId, :name, :email, :body)";
 
             $postsStmt = $this->pdo->prepare($insertPostsQuery);
             $commentsStmt = $this->pdo->prepare($insertCommentsQuery);
-
+        //Заполнение БД
             foreach ($this->postsAData as $row) {
                 $postsStmt->execute([
                     ':userId' => $row['userId'],
@@ -48,26 +62,6 @@ class ParsingScript
                 ]);
             }
         }
-    }
-
-    public function checkData() //проверить наличие данных
-    {
-        $checkQuery = "SELECT COUNT(*) as count FROM posts WHERE id = 1";
-        $stmt = $this->pdo->query($checkQuery);
-
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        return $result['count'] > 0;
-    }
-
-    public function getRecordsAmount(string $table) // получить к-во записей
-    {
-        $getRecordsQuery = "SELECT COUNT(id) as count FROM $table;";
-        $stmt = $this->pdo->query($getRecordsQuery);
-
-        $recordsAmount = $stmt->fetchColumn();
-
-        return $recordsAmount;
     }
 }
 
