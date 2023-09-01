@@ -1,10 +1,11 @@
 <?php
+require_once 'DBConfiguration.php';
 
 /**
  * Парсит данные из JSON для дальнейшего использования.
  * Устанавливает подключение к БД.
  */
-abstract class BaseDataControl extends DBConfiguration
+ class BaseDataControl extends DBConfiguration
 {
 
     /**

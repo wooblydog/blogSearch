@@ -1,4 +1,5 @@
 <?php
+require_once 'DBConfiguration.php';
 
 /**
  * Манипулирует данными
