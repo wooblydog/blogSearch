@@ -1,11 +1,10 @@
-<?php require_once 'ParsingScript.php';
+<?php require_once 'BaseDataControl.php';
 require_once 'DataControl.php';
 
-$parsingScript = new ParsingScript();
+
 $dataController = new DataControl();
 
-$parsingScript->uploadData();
-
+$dataController->uploadData();
 ?>
 
 <!doctype html>
@@ -29,7 +28,10 @@ $parsingScript->uploadData();
 </form>
 
 
-<?php if ($dataController->getPosts() !== null) {
+<?php
+$input = $_GET['floatingInput'];
+
+if ($dataController->getPosts() !== null) {
     foreach ($dataController->getPosts() as $row) {
         echo <<<HTML
         <article class="blog-post m-5 p-5">
@@ -40,13 +42,19 @@ $parsingScript->uploadData();
         HTML;
     }
 }
+if ($input !== null) {
+    if (!$dataController->isValidKeyword($input)) {
+        echo "Введите минимум три символа";
+    }
+}
+else {
+    echo "Введите ключевое слово";
+}
 
-if (!$dataController->isValidKeyword($_GET['floatingInput'])) {
-    echo "Введите минимум три символа";
+if ($dataController->getPosts() === null) {
+    echo "Записей с ключевым словом '" . $input . "' в комментариях не найдено";
 }
-if ($dataController->getPosts() === null && $dataController->isValidKeyword($_GET['floatingInput'])) {
-    echo "Записей с ключевым словом '" . $_GET['floatingInput'] . "' в комментариях не найдено";
-}
+
 ?>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
